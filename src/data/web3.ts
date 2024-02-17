@@ -3,7 +3,7 @@ import injectedModule from '@web3-onboard/injected-wallets';
 import ledgerModule from '@web3-onboard/ledger';
 import { init, useConnectWallet } from '@web3-onboard/react';
 import walletConnectModule from '@web3-onboard/walletconnect';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { singletonHook } from 'react-singleton-hook';
 
 import icon from '@/assets/images/near_social_icon.svg';
@@ -250,6 +250,7 @@ const defaultEthersProviderContext: EthersProviderContext = { useConnectWallet }
 export const useEthersProviderContext = singletonHook(defaultEthersProviderContext, () => {
   const [{ wallet }] = useConnectWallet();
   const [ethersProvider, setEthersProvider] = useState(defaultEthersProviderContext);
+  const prevWalletAccountsRef = useRef("");
 
   useEffect(() => {
     (async () => {
@@ -281,11 +282,28 @@ export const useEthersProviderContext = singletonHook(defaultEthersProviderConte
   useEffect(() => {
     if (!wallet) return;
 
+    const prevAccounts = prevWalletAccountsRef.current;
+    const currentAccounts = JSON.stringify(wallet.accounts);
+
+    if (currentAccounts.length != prevAccounts.length || currentAccounts != prevAccounts) {
+      setEthersProvider({
+        provider: wallet.provider,
+        useConnectWallet,
+      });
+    }
+
+    prevWalletAccountsRef.current = currentAccounts;
+  }, [wallet?.accounts]);
+
+  useEffect(() => {
+    if (!wallet) return;
+    console.log(wallet);
+
     setEthersProvider({
       provider: wallet.provider,
       useConnectWallet,
     });
-  }, [wallet]);
+  }, [wallet?.chains[0].id, wallet?.provider]);
 
   return ethersProvider;
 });
