@@ -4,7 +4,7 @@ import { useVmStore } from '@/stores/vm';
 import { Spinner } from '../lib/Spinner';
 
 type Props = {
-  src: string;
+  code: string;
   props?: Record<string, unknown>;
 };
 
